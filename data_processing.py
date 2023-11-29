@@ -3,6 +3,12 @@ import csv, os
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
+movies = []
+with open(os.path.join(__location__, 'movies.csv')) as f:
+    rows = csv.DictReader(f)
+    for r in rows:
+        movies.append(dict(r))
+
 class DB:
     def __init__(self):
         self.database = []
@@ -100,3 +106,58 @@ class Table:
     def __str__(self):
         return self.table_name + ':' + str(self.table)
 
+    def insert_row(self, dict):
+        '''
+        This method inserts a dictionary, dict, into a Table object, effectively adding a row to the Table.
+        '''
+        self.table.append(dict)
+
+
+    def update_row(self, primary_attribute, primary_attribute_value, update_attribute, update_value):
+        '''
+        This method updates the current value of update_attribute to update_value
+        For example, my_table.update_row('Film', 'A Serious Man', 'Year', '2022') will change the 'Year' attribute for the 'Film'
+        'A Serious Man' from 2009 to 2022
+        '''
+        for i in self.table:
+            if i[primary_attribute] == primary_attribute_value:
+                i[update_attribute] = update_value
+
+
+table_movies = Table('movies', movies)
+print('the average value of ‘Worldwide Gross’ for ‘Comedy’ movies:')
+table_movies_1 = table_movies.filter(lambda x: x['Genre'] == 'Comedy').aggregate(lambda x: sum(x)/len(x), 'Worldwide Gross')
+print(table_movies_1)
+
+print('the minimum ‘Audience score %’ for ‘Drama’ movies:')
+table_movies_2 = table_movies.filter(lambda x: x['Genre'] == 'Drama').aggregate(lambda x: min(x), 'Audience score %')
+print(table_movies_2)
+
+print('Count the number of ‘Fantasy’ movie')
+table_movies_3 = table_movies.filter(lambda x: x['Genre'] == 'Fantasy').aggregate(lambda x: len(x), 'Film')
+print(table_movies_3)
+
+
+dict = {}
+dict['Film'] = 'The Shape of Water'
+dict['Genre'] = 'Fantasy'
+dict['Lead Studio'] = 'Fox'
+dict['Audience score %'] = '72'
+dict['Profitability'] = '9.765'
+dict['Rotten Tomatoes %'] = '92'
+dict['Worldwide Gross'] = '195.3'
+dict['Year'] = '2017'
+
+table_movies.insert_row(dict)
+
+
+print('Count the number of ‘Fantasy’ movie after insert the following movie')
+table_movies_4 = table_movies.filter(lambda x: x['Genre'] == 'Fantasy').aggregate(lambda x: len(x), 'Film')
+print(table_movies_4)
+
+
+print(table_movies.table)
+
+table_movies.update_row('Film', 'A Serious Man', 'Year', '2022')
+
+print(table_movies.table)
